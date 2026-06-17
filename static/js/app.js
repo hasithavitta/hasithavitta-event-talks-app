@@ -33,9 +33,7 @@ const DOM = {
     btnRefresh: document.getElementById('btn-refresh'),
     spinner: document.getElementById('spinner'),
     refreshIcon: document.getElementById('refresh-icon'),
-    btnThemeToggle: document.getElementById('btn-theme-toggle'),
-    sunIcon: document.querySelector('.sun-icon'),
-    moonIcon: document.querySelector('.moon-icon'),
+    themeCheckbox: document.getElementById('theme-checkbox'),
     feedStatusText: document.getElementById('feed-status-text'),
     feedStatusContainer: document.getElementById('feed-status-container'),
     
@@ -92,26 +90,24 @@ function setTheme(theme) {
     if (theme === 'light') {
         document.body.classList.remove('dark-theme');
         document.body.classList.add('light-theme');
-        DOM.sunIcon.classList.add('hidden');
-        DOM.moonIcon.classList.remove('hidden');
+        if (DOM.themeCheckbox) DOM.themeCheckbox.checked = true;
     } else {
         document.body.classList.remove('light-theme');
         document.body.classList.add('dark-theme');
-        DOM.moonIcon.classList.add('hidden');
-        DOM.sunIcon.classList.remove('hidden');
+        if (DOM.themeCheckbox) DOM.themeCheckbox.checked = false;
     }
     localStorage.setItem('bq-theme', theme);
 }
 
-function toggleTheme() {
-    const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-}
-
 // Event Listeners Setup
 function setupEventListeners() {
-    // Theme Toggle
-    DOM.btnThemeToggle.addEventListener('click', toggleTheme);
+    // Theme Toggle Switch
+    if (DOM.themeCheckbox) {
+        DOM.themeCheckbox.addEventListener('change', (e) => {
+            const targetTheme = e.target.checked ? 'light' : 'dark';
+            setTheme(targetTheme);
+        });
+    }
 
     // Export to CSV
     DOM.btnExport.addEventListener('click', exportFeedToCSV);
