@@ -29,6 +29,7 @@ const TYPE_EMOJIS = {
 // DOM Elements
 const DOM = {
     appTitle: document.getElementById('app-title'),
+    btnExport: document.getElementById('btn-export'),
     btnRefresh: document.getElementById('btn-refresh'),
     spinner: document.getElementById('spinner'),
     refreshIcon: document.getElementById('refresh-icon'),
@@ -111,6 +112,9 @@ function toggleTheme() {
 function setupEventListeners() {
     // Theme Toggle
     DOM.btnThemeToggle.addEventListener('click', toggleTheme);
+
+    // Export to CSV
+    DOM.btnExport.addEventListener('click', exportFeedToCSV);
 
     // Refresh Feed
     DOM.btnRefresh.addEventListener('click', () => {
@@ -343,6 +347,12 @@ function renderFeed() {
                         </svg>
                         <span>Official Notes</span>
                     </a>
+                    <button class="card-action-btn btn-copy-card" title="Copy update to clipboard" onclick="event.stopPropagation(); copyCardText('${update.id}')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                        </svg>
+                        <span>Copy Text</span>
+                    </button>
                 </div>
             </article>
         `;
@@ -559,3 +569,71 @@ function showToast(message, isError = false) {
         DOM.toast.classList.add('hidden');
     }, 3000);
 }
+
+// Export currently viewed release notes to CSV
+function exportFeedToCSV() {
+    let filtered = appState.updates;
+    if (appState.activeFilter !== 'all') {
+        filtered = filtered.filter(u => u.type.toLowerCase() === appState.activeFilter.toLowerCase());
+    }
+    if (appState.searchQuery) {
+        const query = appState.searchQuery.toLowerCase();
+        filtered = filtered.filter(u => 
+            u.date.toLowerCase().includes(query) || 
+            u.type.toLowerCase().includes(query) || 
+            u.plain_text.toLowerCase().includes(query)
+        );
+    }
+    
+    if (filtered.length === 0) {
+        showToast('No entries to export.', true);
+        return;
+    }
+    
+    const headers = ['Date', 'Type', 'Description', 'Link'];
+    const csvRows = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(",")];
+    
+    filtered.forEach(u => {
+        const row = [
+            u.date,
+            u.type,
+            u.plain_text,
+            u.link
+        ];
+        csvRows.push(row.map(val => `"${val.replace(/"/g, '""')}"`).join(","));
+    });
+    
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    const dateSuffix = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `bigquery_releases_${appState.activeFilter}_${dateSuffix}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('CSV export downloaded!');
+}
+
+// Copy specific card's text to clipboard
+async function copyCardText(updateId) {
+    const update = appState.updates.find(u => u.id === updateId);
+    if (!update) return;
+    
+    const textToCopy = `[BigQuery ${update.type}] ${update.date}\n${update.plain_text}\nLink: ${update.link}`;
+    try {
+        await navigator.clipboard.writeText(textToCopy);
+        showToast('Update details copied!');
+    } catch (err) {
+        console.error('Clipboard copy failed:', err);
+        showToast('Failed to copy text.', true);
+    }
+}
+
+// Expose copyCardText globally for inline HTML click handlers
+window.copyCardText = copyCardText;
+

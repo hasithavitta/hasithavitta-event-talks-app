@@ -649,20 +649,28 @@ body.light-theme .note-card-content code {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: 1.25rem;
     margin-top: 0.25rem;
 }
 
-.card-link-ref {
+.card-link-ref,
+.card-action-btn {
     font-size: 0.75rem;
     color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 0.35rem;
     text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
     transition: color var(--transition-fast);
 }
 
-.card-link-ref:hover {
+.card-link-ref:hover,
+.card-action-btn:hover {
     color: var(--text-secondary);
 }
 
