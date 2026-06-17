@@ -1,6 +1,6 @@
 # BigQuery Release Notes Studio 🚀
 
-BigQuery Release Notes Studio is a developer-centric Single-Page Application (SPA) dashboard built using **Python Flask**, **Vanilla JavaScript**, **CSS**, and **HTML**. It ingests the Google Cloud BigQuery Release Notes RSS/Atom feed, parses and segment daily notes into individual updates, and helps you format and draft tweets on X (formerly Twitter) with a single click.
+BigQuery Release Notes Studio is a developer-centric Single-Page Application (SPA) dashboard built using **Python Flask**, **Vanilla JavaScript**, **CSS**, and **HTML**. It ingests the Google Cloud BigQuery Release Notes RSS/Atom feed, parses and segments daily notes into individual updates, and helps you format and draft tweets on X (formerly Twitter) with a single click.
 
 ---
 
@@ -10,7 +10,10 @@ BigQuery Release Notes Studio is a developer-centric Single-Page Application (SP
 - **Dynamic Tweet Studio**: Click any card to load it into the Composer. Offers custom templates (`Summarize`, `Headline`, `Detailed`) and customizable chips to toggle the inclusion of dates, links, tech hashtags, and emojis.
 - **Smart Character Constraint Management**: Real-time counter and SVG progress ring showing remaining characters under the X.com 280-character limit, automatically truncating drafts.
 - **Speedy API Caching**: Implements a 5-minute memory cache to prevent API rate limits, with a manual refresh button to bypass and retrieve new data.
-- **Responsive Theme Switching**: Supports a sleek, dark space theme by default (with neon glowing details) and a crisp, responsive light theme.
+- **Sliding Theme Switch Toggle 🌓**: A custom slide-switch in the header allowing you to swap color schemes from dark to light mode by dynamically overriding CSS root variables.
+- **Export to CSV 📊**: A global header action to download standard RFC-compliant CSV reports of your currently filtered and searched release notes feed.
+- **Card-level Clipboard Copying 📋**: Instant "Copy Text" action links in the footer of each card to copy pre-formatted plaintext summaries.
+- **Contextual Search Highlighting 🔍**: Safe DOM-walking keyword highlighting that wraps search queries inside themed `<mark>` tags without breaking HTML layout or link tags.
 - **Local Dev Resilience**: Gracefully falls back to cached data with warnings if the external GCP feed cannot be reached.
 
 ---
@@ -28,12 +31,12 @@ BigQuery Release Notes Studio is a developer-centric Single-Page Application (SP
 ```text
 ├── app.py                  # Flask REST API and feed processing engine
 ├── templates/
-│   └── index.html          # SPA Markup structure & icons
+│   └── index.html          # SPA Markup structure & controls
 ├── static/
 │   ├── css/
 │   │   └── style.css       # Visual styles, themes & layout spacing
 │   └── js/
-│       └── app.js          # App state logic, parsing & X.com integration
+│       └── app.js          # App state logic, DOM highlight walker & X integration
 ├── venv/                   # Python Virtual Environment
 ├── .gitignore              # Ignored local configurations and environments
 └── README.md               # Project documentation
