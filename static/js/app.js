@@ -320,12 +320,15 @@ function renderFeed() {
         const typeClass = `badge-${update.type.toLowerCase()}`;
         const isSelected = appState.selectedUpdate && appState.selectedUpdate.id === update.id;
         
+        const highlightedContent = highlightTextInHTML(update.content, appState.searchQuery);
+        const highlightedDate = highlightTextInHTML(update.date, appState.searchQuery);
+        
         const cardHTML = `
             <article class="note-card ${isSelected ? 'selected' : ''}" data-id="${update.id}" id="card-${update.id}">
                 <div class="note-card-meta">
                     <div class="meta-left">
                         <span class="badge ${typeClass}">${update.type}</span>
-                        <span class="note-date">${update.date}</span>
+                        <span class="note-date">${highlightedDate}</span>
                     </div>
                     <div class="card-select-indicator" title="Select for Tweet">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -334,7 +337,7 @@ function renderFeed() {
                     </div>
                 </div>
                 <div class="note-card-content">
-                    ${update.content}
+                    ${highlightedContent}
                 </div>
                 <div class="note-card-footer">
                     <a href="${update.link}" target="_blank" rel="noopener noreferrer" class="card-link-ref" onclick="event.stopPropagation()">
@@ -632,4 +635,48 @@ async function copyCardText(updateId) {
 
 // Expose copyCardText globally for inline HTML click handlers
 window.copyCardText = copyCardText;
+
+// Safely highlight search query text inside HTML structures without breaking tags or links
+function highlightTextInHTML(htmlContent, query) {
+    if (!query || !query.trim()) return htmlContent;
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    
+    // Escape special regex characters in the query to avoid crash
+    const escapedQuery = escapeRegExp(query.trim());
+    const regex = new RegExp(`(${escapedQuery})`, 'gi');
+    
+    // Recursive DFS traversal of text nodes to modify text safely in-place
+    function walkTextNodes(node) {
+        if (node.nodeType === 3) { // Text Node
+            const originalText = node.nodeValue;
+            if (regex.test(originalText)) {
+                const spanNode = document.createElement('span');
+                // Replace matching parts with mark tags
+                spanNode.innerHTML = originalText.replace(regex, '<mark>$1</mark>');
+                
+                // Splice the newly created DOM elements back before the original text node
+                const parent = node.parentNode;
+                while (spanNode.firstChild) {
+                    parent.insertBefore(spanNode.firstChild, node);
+                }
+                parent.removeChild(node);
+            }
+        } else if (node.nodeType === 1) { // Element Node
+            // Traverse all child nodes. Pre-clone standard array to avoid index skips
+            const childNodes = Array.from(node.childNodes);
+            childNodes.forEach(child => walkTextNodes(child));
+        }
+    }
+    
+    walkTextNodes(tempDiv);
+    return tempDiv.innerHTML;
+}
+
+// Utility to escape regular expression characters
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 

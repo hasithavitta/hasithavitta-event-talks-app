@@ -1235,3 +1235,18 @@ body.light-theme .light-label {
     filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.4));
 }
 
+/* Highlight search queries inside cards */
+mark {
+    background-color: rgba(245, 158, 11, 0.35); /* Glowing amber */
+    color: #fbbf24; /* Bright amber */
+    padding: 0.05rem 0.2rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+body.light-theme mark {
+    background-color: rgba(217, 119, 6, 0.18);
+    color: #b45309;
+}
+
+
